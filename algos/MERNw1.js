@@ -35,5 +35,17 @@
 
 var array=[3, 5, -4, 8, 11, 1, -1, 6];
 var targetSum=10;
-
-function twoNumberSum(array, target)
+// O(n) time because of hash table 
+function twoNumberSum(array, target){
+    const nums = {}; // Hash table
+    for(const num of array){
+        const potentialMatch = targetSum - num;
+        if(potentialMatch in nums){
+            return [potentialMatch, num];
+        } else{
+            nums[num] = true;
+        }
+    }
+    return [];
+}
+console.log(twoNumberSum(array,targetSum))
