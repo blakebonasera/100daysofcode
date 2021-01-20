@@ -11,10 +11,33 @@ function insertionSort(array){
     return array;
 }
 
-function swap(i,x,array){
-    const temp = array[x];
-    array[x]=array[i];
-    array[i]= temp;
+// function swap(i,x,array){
+//     const temp = array[x];
+//     array[x]=array[i];
+//     array[i]= temp;
+// }
+
+// console.log(insertionSort([-7, 2, 3, 8, -10, 4, -6, -10, -2, -7, 10, 5, 2, 9, -9, -5, 3, 8]));
+
+//Selection Sort
+
+function selectionSort(array){
+    let start = 0;
+    while (start < array.length -1) {
+        let small = start;
+        for (let i=start+1; i < array.length; i++){
+            if(array[small]> array[i]) small=i;
+        }
+        swap(start,small,array);
+        start++;
+    }
+    return array;
 }
 
-console.log(insertionSort([-7, 2, 3, 8, -10, 4, -6, -10, -2, -7, 10, 5, 2, 9, -9, -5, 3, 8]));
+function swap(i,j,array){
+    const temp = array[j];
+    array[j]=array[i];
+    array[i]=temp;
+}
+
+console.log(selectionSort([8, 5, 2, 9, 5, 6, 3]))
