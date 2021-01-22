@@ -8,7 +8,8 @@ import AddFavorite from './components/AddToFavorites';
 
 const App = () => {
 	const [movies, setMovies] = useState([]);
-	const [searchValue, setSearchValue] = useState('');
+  const [searchValue, setSearchValue] = useState('');
+  const [favorites, setFavorites] = useState([]);
 
 	const getMovieRequest = async (searchValue) => {
 		const url = `http://www.omdbapi.com/?s=${searchValue}&apikey=263d22d8`;
@@ -19,7 +20,12 @@ const App = () => {
 		if (responseJson.Search) {
 			setMovies(responseJson.Search);
 		}
-	};
+  };
+  
+  const addFavoriteMovie = (movie) => {
+    const newFavoriteList = [...favorites, movie];
+    setFavorites(newFavoriteList)
+  }
 
 	useEffect(() => {
 		getMovieRequest(searchValue);
@@ -32,7 +38,11 @@ const App = () => {
 				<SearchBox searchValue={searchValue} setSearchValue={setSearchValue} />
 			</div>
 			<div className='row'>
-				<MovieList movies={movies} favoriteComponent={AddFavorite} />
+        <MovieList
+          movies={movies}
+          favoriteComponent={AddFavorite}
+          hdaleFavoritesClick={addFavoriteMovie} 
+        />
 			</div>
 		</div>
 	);
