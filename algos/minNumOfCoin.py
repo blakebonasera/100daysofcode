@@ -10,3 +10,4 @@ def minNumberOfCoinsForChange(n, denoms):
     return numOfCoins[n] if numOfCoins[n] != float('inf') else -1
 
     print(minNumberOfCoinsForChange(7,[1,5,7]))
+
