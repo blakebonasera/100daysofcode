@@ -16,13 +16,24 @@ function firstDuplicateValue(array) {
     return array[minimumSecondIndex];
 }
 
-// O(n) Time | O(n) Space
+// O(n) Time | O(n) Space - where n is the length of the input array
 
 function firstDuplicateValue(array) {
     const seen = new Set();
     for (const value of array) {
         if (seen.has(value)) return value;
         seen.add(value);
+    }
+    return -1;
+}
+
+// O(n) Time | O(1) Space - where n is the length of the input array
+
+function firstDuplicateValue(array) {
+    for (const value of array) {
+        const absValue = Math.abs(value);
+        if (array[absValue - 1] < 0) return absValue;
+        array[absValue - 1] *= -1;
     }
     return -1;
 }
