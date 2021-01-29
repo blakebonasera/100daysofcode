@@ -17,7 +17,9 @@ function App() {
         <li class="list-group-item bg-dark text-danger border-danger"><strong> TV Station</strong> - 27495810</li>
         <li class="list-group-item bg-dark text-danger border-danger"> <strong>Farmland</strong> - 49285163</li>
       </ul>
+      <div className="col-6">
       <img src={map} alt="map"/>
+      </div>
     </div>
       </>
   );
