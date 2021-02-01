@@ -1,45 +1,57 @@
+const http = require('http')
+const path = require('path')
+const express = require('express')
+const socketIo = require('socket.io')
 const needle = require('needle')
 const config = require('dotenv').config()
 const TOKEN = process.env.TWITTER_BEARER_TOKEN
+const PORT = process.env.PORT || 3000
+
+const app = express()
+
+const server = http.createServer(app)
+const io = socketIo(server)
+
+app.get('/', (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../', 'client', 'index.html'))
+})
 
 const rulesURL = 'https://api.twitter.com/2/tweets/search/stream/rules'
-const streamURL = 'https://api.twitter.com/2/tweets/search/stream?tweet.fields=public_metrics&expansions=author_id'
+const streamURL =
+    'https://api.twitter.com/2/tweets/search/stream?tweet.fields=public_metrics&expansions=author_id'
 
-const rules = [{value: 'coding'}]
+const rules = [{ value: 'giveaway' }]
 
-
-// get stream rules
+// Get stream rules
 async function getRules() {
     const response = await needle('get', rulesURL, {
         headers: {
-            Authorization: `Bearer ${TOKEN}`
-        }
+            Authorization: `Bearer ${TOKEN}`,
+        },
     })
-    
+    console.log(response.body)
     return response.body
 }
-
-
-
 
 // Set stream rules
 async function setRules() {
     const data = {
-        add: rules
+        add: rules,
     }
+
     const response = await needle('post', rulesURL, data, {
         headers: {
             'content-type': 'application/json',
             Authorization: `Bearer ${TOKEN}`,
-        }
+        },
     })
-    
+
     return response.body
 }
 
 // Delete stream rules
-async function deleteRules() {
-    if(!Array.isArray(rules.data)){
+async function deleteRules(rules) {
+    if (!Array.isArray(rules.data)) {
         return null
     }
 
@@ -47,49 +59,69 @@ async function deleteRules() {
 
     const data = {
         delete: {
-            ids: ids
-        }
+            ids: ids,
+        },
     }
+
     const response = await needle('post', rulesURL, data, {
         headers: {
             'content-type': 'application/json',
             Authorization: `Bearer ${TOKEN}`,
-        }
+        },
     })
-    
+
     return response.body
 }
 
-function streamTweets() {
+function streamTweets(socket) {
     const stream = needle.get(streamURL, {
         headers: {
-            Authorization: `Bearer ${TOKEN}`
-        }
+            Authorization: `Bearer ${TOKEN}`,
+        },
     })
 
     stream.on('data', (data) => {
         try {
             const json = JSON.parse(data)
             console.log(json)
-        } catch (error) {}
+            socket.emit('tweet', json)
+        } catch (error) { }
     })
+
+    return stream
 }
 
-(async () => {
-    let currentRules 
+io.on('connection', async () => {
+    console.log('Client connected...')
+
+    let currentRules
 
     try {
-        //get stream rules
+        //   Get all stream rules
         currentRules = await getRules()
 
-        // delete stream rules
+        // Delete all stream rules
         await deleteRules(currentRules)
 
-        // set stream rules
+        // Set rules based on array above
         await setRules()
     } catch (error) {
-        console.log(error)
+        console.error(error)
         process.exit(1)
     }
-    streamTweets()
-})()
+
+    const filteredStream = streamTweets(io)
+
+    let timeout = 0
+    filteredStream.on('timeout', () => {
+        // Reconnect on error
+        console.warn('A connection error occurred. Reconnecting…')
+        setTimeout(() => {
+            timeout++
+            streamTweets(io)
+        }, 2 ** timeout)
+        streamTweets(io)
+    })
+})
+
+server.listen(PORT, () => console.log(`Listening on port ${PORT}`))
